@@ -1,0 +1,41 @@
+#!/bin/python3
+import subprocess
+import getpass
+import hashlib
+
+def delete_user(username):
+    try:
+        # Construire la commande pour supprimer l'utilisateur
+        userdel_command = f"sudo userdel {username}"
+
+        # Exécuter la commande
+        subprocess.run(userdel_command, shell=True, check=True)
+
+        print(f"L'utilisateur {username} a été supprimé avec succès.")
+    except subprocess.CalledProcessError as e:
+        print(f"Erreur lors de la suppression de l'utilisateur : {e}")
+
+def main():
+    # Demander le nom d'utilisateur
+    username = input("Entrez le nom d'utilisateur: ")
+
+    # Demander le mot de passe
+    password = getpass.getpass(f"Entrez le mot de passe pour {username}: ")
+
+    # Utiliser hashlib pour hacher le mot de passe avec SHA-512
+    hashed_password = hashlib.sha512(password.encode('utf-8')).hexdigest()
+
+    # Construire la commande pour changer le mot de passe de l'utilisateur
+    passwd_command = f"echo '{username}:{hashed_password}' | sudo chpasswd"
+
+    try:
+        # Exécuter la commande pour changer le mot de passe
+        subprocess.run(passwd_command, shell=True, check=True)
+
+        # Supprimer l'utilisateur
+        delete_user(username)
+    except subprocess.CalledProcessError as e:
+        print(f"Erreur lors de la modification du mot de passe : {e}")
+
+if __name__ == "__main__":
+    main()

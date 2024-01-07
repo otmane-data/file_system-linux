@@ -1,0 +1,47 @@
+#!/usr/bin/env python3
+import os
+import argparse
+import configparser
+from tools import status_path
+import  json
+def edit_file(username, filename):
+    with open(status_path(),"r") as f:
+        status=json.load(f)
+        c = status["connected_user"]
+    user_directory = os.path.join(os.path.expanduser("~"), "ID1FS", "home", f"{c}")
+    file_path = os.path.join(user_directory, filename)
+
+    try:
+        with open(file_path, "r") as f:
+            content = f.read()
+    except FileNotFoundError:
+        print(f"File {filename} not found.")
+        return
+
+    print(f"Editing file: {filename}\n")
+    print("Current content:\n")
+    print(content)
+
+    new_content = input("\nEnter your changes. Press Ctrl + D to save and exit: ")
+
+    try:
+        with open(file_path, "w") as f:
+            f.write(new_content)
+        print(f"Changes saved successfully.")
+    except PermissionError:
+        print(f"Permission denied. Unable to save changes. Make sure you have write permissions.")
+
+def main():
+    # Parse command line arguments
+    parser = argparse.ArgumentParser(description='Edit a file in the user\'s directory.')
+    parser.add_argument('-f', '--filename', help='Name of the file to edit', required=True)
+    args = parser.parse_args()
+
+    # Retrieve the username interactively
+    username = input("Enter your username: ")
+
+    # Edit the file
+    edit_file(username, args.filename)
+
+if __name__ == "__main__":
+    main()

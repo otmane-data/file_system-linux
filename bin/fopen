@@ -1,0 +1,24 @@
+#!/bin/python3
+import argparse
+
+def display_file_preview(file_path, num_lines=10):
+    try:
+        with open(file_path, 'r') as file:
+            lines = [next(file) for _ in range(num_lines)]
+            print(f"Preview of the first {num_lines} lines of '{file_path}':\n")
+            print("".join(lines))
+    except FileNotFoundError:
+        print(f"Error: File '{file_path}' not found.")
+    except Exception as e:
+        print(f"Error: An unexpected error occurred - {e}")
+
+def main():
+    parser = argparse.ArgumentParser(description='Display a preview of the first N lines of a file.')
+    parser.add_argument('file_name', help='Name of the file to open')
+    parser.add_argument('-p', '--preview', type=int, default=10, help='Number of lines to preview (default is 10)')
+    args = parser.parse_args()
+
+    display_file_preview(args.file_name, args.preview)
+
+if __name__ == "__main__":
+    main()

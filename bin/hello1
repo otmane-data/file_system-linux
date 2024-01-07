@@ -1,0 +1,64 @@
+#!/bin/python3
+import argparse
+import json
+import jsonify
+from tools import status_path
+
+parser = argparse.ArgumentParser(description="Gestion du statut du système.")
+parser.add_argument("-s", "--statut", help="Afficher le statut actuel du système", action="store_true")
+parser.add_argument("-d", "--demarrer", help="Démarrer le système", action="store_true")
+parser.add_argument("-a", "--arreter", help="Arrêter le système", action="store_true")
+parser.add_argument("-f", "--fichier", help="Nom du fichier JSON à lire")
+
+args = parser.parse_args()
+
+
+def afficher_statut():
+    with open(status_path(),"r") as f:
+        status=json.load(f)
+    s=status["status"]
+    c=status["connected_user"]
+    t=status["time"]
+    print(f"Statut : {s}")
+    print(f"Utilisateur connecté : {c}")
+    print(f"Horloge configurée : {t}")
+
+def allumer_systeme(utilisateur=None):
+    with open(status_path(), "r") as f:
+        status = json.load(f)
+    if status["status"] == "off":
+        status["status"] = "on"
+        status["connected_user"] = utilisateur
+        status["time"] = "configured"
+        with open(status_path(), "w") as f:
+            json.dump(status,f,indent=4)
+
+    else:
+        print("Le système est déjà allumé.")
+def eteindre_systeme(utilisateur=None):
+    with open(status_path(), "r") as f:
+        status = json.load(f)
+        if status["status"] == "on":
+            status["status"] = "off"
+            status["connected_user"] = utilisateur
+            status["time"] = "not configured"
+            with open(status_path(), "w") as f:
+                json.dump(status, f, indent=4)
+        else:
+            print("Le système est déjà éteint.")
+
+if args.fichier:
+
+    pass
+else:
+    if args.statut:
+        afficher_statut()
+
+    elif args.demarrer:
+        allumer_systeme()
+        afficher_statut()
+    elif args.arreter:
+        eteindre_systeme()
+        afficher_statut()
+    else:
+        print("Utilisez -h/--help pour voir les options disponibles.")

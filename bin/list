@@ -1,0 +1,49 @@
+#!/bin/python3
+import os
+import argparse
+import getpass
+import json
+import logging
+from tools import status_path
+
+# Configuration du journal
+fichier_journal = "user_otmane.log"
+logging.basicConfig(filename=fichier_journal,filemode="a", level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
+def list_files_by_extension(username, extension):
+    try:
+        with open(status_path(), "r") as f:
+            status = json.load(f)
+            c = status["connected_user"]
+        user_directory = os.path.join(os.path.expanduser("~"), "ID1FS", "home", f"{c}")
+
+        files = [file for file in os.listdir(user_directory) if file.endswith(extension)]
+        logging.info(f"Liste des fichiers avec l'extension '{extension}' pour l'utilisateur {username}: {files}")
+        print(f"{files}")
+    except PermissionError:
+        logging.warning("Permission denied. Make sure you have the necessary permissions.")
+        print("Permission denied. Make sure you have the necessary permissions.")
+    except Exception as e:
+        logging.error(f"Une erreur s'est produite lors de l'affichage des fichiers : {e}")
+        print(f"Une erreur s'est produite lors de l'affichage des fichiers : {e}")
+
+def main():
+    try:
+        # Parse command line arguments
+        parser = argparse.ArgumentParser(description='List files in the user\'s directory based on extension.')
+        parser.add_argument('-e', '--extension', help='Filter files by extension')
+        args = parser.parse_args()
+
+        # Retrieve the username interactively
+        username = getpass.getuser()
+
+        if args.extension:
+            # List files with the specified extension
+            list_files_by_extension(username, args.extension)
+        else:
+            logging.error("Veuillez fournir une extension en utilisant l'option -e ou --extension.")
+            print("Veuillez fournir une extension en utilisant l'option -e ou --extension.")
+    except Exception as e:
+        logging.error(f"Une erreur s'est produite lors de l'exécution du programme principal : {e}")
+
+if __name__ == "__main__":
+    main()

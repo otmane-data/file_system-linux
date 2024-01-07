@@ -1,0 +1,94 @@
+#!/bin/python3
+import getpass
+import hashlib
+import argparse
+import json
+import logging
+from tools import status_path
+
+# Configuration du journal
+fichier_journal = "user_actions.log"
+logging.basicConfig(filename=fichier_journal, filemode="a", level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+def authenticate_user(username, password):
+    try:
+        # Charger les informations de hache.txt
+        with open('/home/mouad/ID1FS/managers/hache.txt', 'r') as hache_file:
+            lines = hache_file.readlines()
+
+        for line in lines:
+            stored_username, stored_hashed_password = line.strip().split(':')
+            if username == stored_username:
+                # Vérifier si le mot de passe fourni est correct
+                if hashlib.sha512(password.encode('utf-8')).hexdigest() == stored_hashed_password:
+                    logging.info(f"Utilisateur {username} authentifié avec succès.")
+                    return True
+    except Exception as e:
+        logging.error(f"Une erreur s'est produite lors de l'authentification : {e}")
+
+    logging.warning(f"Tentative d'authentification infructueuse pour l'utilisateur {username}. Mot de passe incorrect.")
+    return False
+
+def display_status(username=None):
+    try:
+        with open(status_path(), "r") as f:
+            status = json.load(f)
+            status["status"] = "on"
+            status["connected_user"] = username  # Mettre à jour le nom de l'utilisateur connecté
+            status["time"] = "configured"
+            with open(status_path(), "w") as f:
+                json.dump(status, f, indent=4)
+        logging.info(f"Statut mis à jour avec succès pour l'utilisateur {username}.")
+    except Exception as e:
+        logging.error(f"Une erreur s'est produite lors de la mise à jour du statut : {e}")
+
+def connect(username, password):
+    try:
+        if authenticate_user(username, password):
+            display_status(username)
+        else:
+            logging.error("Échec de la connexion. Mot de passe incorrect.")
+            print("Échec de la connexion. Mot de passe incorrect.")
+    except Exception as e:
+        logging.error(f"Une erreur s'est produite lors de la connexion : {e}")
+
+def disconnect():
+    try:
+        # Effacer l'utilisateur connecté du statut
+        with open(status_path(), "r") as f:
+            status = json.load(f)
+            status["status"] = "on"
+            status["connected_user"] = None  # Aucun utilisateur connecté
+            status["time"] = "configured"
+            with open(status_path(), "w") as f:
+                json.dump(status, f, indent=4)
+
+        logging.info("Déconnexion réussie.")
+        print("Déconnexion réussie.")
+    except Exception as e:
+        logging.error(f"Une erreur s'est produite lors de la déconnexion : {e}")
+
+def main():
+    try:
+        parser = argparse.ArgumentParser(description="Connecter ou déconnecter un utilisateur.")
+        group = parser.add_mutually_exclusive_group(required=True)
+        group.add_argument("-c", "--connect", action="store_true", help="Se connecter en tant qu'utilisateur")
+        group.add_argument("-d", "--disconnect", action="store_true", help="Se déconnecter de l'utilisateur")
+        parser.add_argument("-u", "--username", type=str, help="Nom d'utilisateur")
+
+        args = parser.parse_args()
+
+        if args.connect:
+            if args.username:
+                password = getpass.getpass(f"Entrez le mot de passe pour l'utilisateur '{args.username}': ")
+                connect(args.username, password)
+            else:
+                logging.error("Erreur: L'option --username est requise pour l'action connect.")
+                print("Erreur: L'option --username est requise pour l'action connect.")
+        elif args.disconnect:
+            disconnect()
+    except Exception as e:
+        logging.error(f"Une erreur s'est produite lors de l'exécution du programme principal : {e}")
+
+if __name__ == "__main__":
+    main()

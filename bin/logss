@@ -1,0 +1,38 @@
+#!/bin/python3
+import logging
+import getpass
+import os
+
+# Build the full path for the log file
+log_file_path = os.path.join('/home/mouad/ID1FS/log', 'logss', 'actions.log')
+
+# Ensure the directory structure exists
+os.makedirs(os.path.dirname(log_file_path), exist_ok=True)
+
+# Configuration du logger
+logging.basicConfig(filename=log_file_path, level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+
+
+def perform_action():
+    # Fonction d'exemple qui effectue une action
+    logging.info("L'utilisateur %s a effectué une action.", getpass.getuser())
+    try:
+        # Code de l'action ici
+        result = 1 / 0  # Exemple d'une erreur
+    except Exception as e:
+        # Enregistrez l'erreur
+        logging.error(f"Une erreur s'est produite : {e}", exc_info=True)
+
+
+def main():
+    # Exemple d'utilisation du logging dans le programme principal
+    logging.debug("Programme démarré.")
+
+    # Exécution de l'action
+    perform_action()
+
+    logging.debug("Programme terminé.")
+
+
+if __name__ == "__main__":
+    main()

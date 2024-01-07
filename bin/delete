@@ -1,0 +1,34 @@
+#!/bin/python3
+import os
+import getpass
+
+def delete_user(username):
+    # Path to the hache.txt file
+    hache_file_path = "/home/ID1FS/managers/hache.txt"
+
+    try:
+        # Read existing usernames and hashed passwords from hache.txt
+        with open(hache_file_path, 'r') as hache_file:
+            lines = hache_file.readlines()
+
+        # Check if the user exists in hache.txt
+        user_exists = any(line.startswith(f"{username}:") for line in lines)
+
+        if user_exists:
+            # Construct the command to delete the user
+            userdel_command = f"sudo userdel -r {username}"
+
+            # Execute the command to delete the user
+            os.system(userdel_command)
+            print(f"L'utilisateur {username} a été supprimé avec succès.")
+        else:
+            print(f"L'utilisateur {username} n'existe pas dans le fichier hache.txt.")
+    except FileNotFoundError:
+        print(f"Le fichier {hache_file_path} n'existe pas.")
+
+if __name__ == "__main__":
+    # Demander le nom d'utilisateur
+    username = input("Entrez le nom d'utilisateur: ")
+
+    # Supprimer l'utilisateur
+    delete_user(username)

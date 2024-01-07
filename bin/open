@@ -1,0 +1,25 @@
+#!/bin/python
+import os
+import sys
+
+def open_file(directory, file_name):
+    try:
+        file_path = os.path.join(directory, file_name)
+        with open(file_path, 'r') as file:
+            content = file.read()
+            print(f"Content of the file '{file_name}':\n{content}")
+    except FileNotFoundError:
+        print(f"Error: File '{file_name}' not found in the directory '{directory}'.")
+    except Exception as e:
+        print(f"Error: An unexpected error occurred - {e}")
+
+if __name__ == "__main__":
+    # Set the fixed directory
+    base_directory = '/home/ID1FS/home'
+
+    # Check if a file name is provided as an argument
+    if len(sys.argv) != 2:
+        print("Usage: python script.py <file_name>")
+    else:
+        file_name = sys.argv[1]
+        open_file(base_directory, file_name)

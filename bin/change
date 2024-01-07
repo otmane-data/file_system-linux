@@ -1,0 +1,51 @@
+#!/bin/python3
+import hashlib
+import getpass
+import subprocess
+
+def read_existing_password(username, file_path):
+    try:
+        with open(file_path, 'r') as hache_file:
+            lines = hache_file.readlines()
+            for line in lines:
+                stored_username, stored_hashed_password = line.strip().split(':')
+                if username == stored_username:
+                    return stored_hashed_password
+    except FileNotFoundError:
+        return None
+
+def change_password(username, file_path):
+    # Read the existing hashed password from the file
+    existing_hashed_password = read_existing_password(username, file_path)
+
+    if existing_hashed_password:
+        # Ask for the new password (the password will not be displayed during input)
+        new_password = getpass.getpass(f"Entrez le nouveau mot de passe pour {username}: ")
+
+        # Hash the new password with SHA-512
+        hashed_password = hashlib.sha512(new_password.encode('utf-8')).hexdigest()
+
+        # Replace the existing hashed password with the new one in the file
+        with open(file_path, 'r') as hache_file:
+            lines = hache_file.readlines()
+        with open(file_path, 'w') as hache_file:
+            for line in lines:
+                stored_username, _ = line.strip().split(':')
+                if username == stored_username:
+                    hache_file.write(f"{username}:{hashed_password}\n")
+                else:
+                    hache_file.write(line)
+
+        print(f"Le mot de passe de l'utilisateur {username} a été modifié avec succès.")
+    else:
+        print(f"L'utilisateur {username} n'a pas de mot de passe haché ou le fichier n'existe pas.")
+
+if __name__ == "__main__":
+    # Ask for the username
+    username = input("Entrez le nom d'utilisateur: ")
+
+    # Specify the correct path to hache.txt
+    file_path = '/home/mouad/ID1FS/managers/hache.txt'
+
+    # Change the password
+    change_password(username, file_path)

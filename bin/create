@@ -1,0 +1,113 @@
+#!/bin/python3
+import os
+import argparse
+import getpass
+import logging
+from tools import status_path
+import json
+
+# Configuration du journal
+fichier_journal = "user_actions.log"
+logging.basicConfig(filename=fichier_journal,filemode="a", level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+def create_file(username, filename):
+    try:
+        with open(status_path(), "r") as f:
+            status = json.load(f)
+            c = status["connected_user"]
+
+        repertoire_utilisateur = os.path.join(os.path.expanduser("~"), "ID1FS", "home", f"{c}")
+
+        os.makedirs(repertoire_utilisateur, exist_ok=True)
+
+        with open(os.path.join(repertoire_utilisateur, filename), "w") as f:
+            f.write("Ce fichier a été créé par l'utilisateur.")
+
+        logging.info(f"Fichier {filename} créé avec succès dans le répertoire de l'utilisateur.")
+        print(f"Fichier {filename} créé avec succès dans le répertoire de l'utilisateur.")
+    except PermissionError:
+        logging.error("Autorisation refusée. Assurez-vous d'avoir les autorisations nécessaires.")
+        print("Autorisation refusée. Assurez-vous d'avoir les autorisations nécessaires.")
+    except Exception as e:
+        logging.error(f"Une erreur s'est produite : {e}")
+        print(f"Une erreur s'est produite : {e}")
+
+
+def delete_file(username, filename):
+    try:
+        with open(status_path(), "r") as f:
+            status = json.load(f)
+            c = status["connected_user"]
+
+        repertoire_utilisateur = os.path.join(os.path.expanduser("~"), "ID1FS", "home", f"{c}")
+
+        os.remove(os.path.join(repertoire_utilisateur, filename))
+
+        logging.info(f"Fichier {filename} supprimé avec succès du répertoire de l'utilisateur.")
+        print(f"Fichier {filename} supprimé avec succès du répertoire de l'utilisateur.")
+    except FileNotFoundError:
+        logging.warning(f"Fichier {filename} introuvable.")
+        print(f"Fichier {filename} introuvable.")
+    except PermissionError:
+        logging.error(
+            f"Autorisation refusée. Impossible de supprimer {filename}. Assurez-vous d'avoir les autorisations nécessaires.")
+        print(
+            f"Autorisation refusée. Impossible de supprimer {filename}. Assurez-vous d'avoir les autorisations nécessaires.")
+    except Exception as e:
+        logging.error(f"Une erreur s'est produite : {e}")
+        print(f"Une erreur s'est produite : {e}")
+
+
+def list_files(username):
+    try:
+        with open(status_path(), "r") as f:
+            status = json.load(f)
+            c = status["connected_user"]
+
+        repertoire_utilisateur = os.path.join(os.path.expanduser("~"), "ID1FS", "home", f"{c}")
+
+        fichiers = os.listdir(repertoire_utilisateur)
+
+        logging.info(f"Fichiers répertoriés avec succès : {fichiers}")
+        print(f"{fichiers}")
+    except PermissionError:
+        logging.error("Autorisation refusée. Assurez-vous d'avoir les autorisations nécessaires.")
+        print("Autorisation refusée. Assurez-vous d'avoir les autorisations nécessaires.")
+    except Exception as e:
+        logging.error(f"Une erreur s'est produite : {e}")
+        print(f"Une erreur s'est produite : {e}")
+
+
+def main():
+    # Analyser les arguments de la ligne de commande
+    parser = argparse.ArgumentParser(
+        description="Créer, supprimer ou répertorier des fichiers dans le répertoire de l'utilisateur.")
+    parser.add_argument('-f', '--filename', help='Nom du fichier à créer ou supprimer')
+    parser.add_argument('-d', '--delete', action='store_true', help='Supprimer le fichier spécifié')
+    parser.add_argument('-l', '--list', action='store_true',
+                        help='Répertorier les fichiers dans le répertoire de l\'utilisateur')
+    args = parser.parse_args()
+
+    # Récupérer le nom d'utilisateur de manière interactive
+    username = getpass.getuser()
+
+    if args.delete:
+        # Supprimer le fichier
+        if args.filename:
+            delete_file(username, args.filename)
+        else:
+            logging.warning("Veuillez fournir un nom de fichier à supprimer.")
+            print("Veuillez fournir un nom de fichier à supprimer.")
+    elif args.list:
+        # Répertorier les fichiers
+        list_files(username)
+    else:
+        # Créer le fichier
+        if args.filename:
+            create_file(username, args.filename)
+        else:
+            logging.warning("Veuillez fournir un nom de fichier à créer.")
+            print("Veuillez fournir un nom de fichier à créer.")
+
+
+if __name__ == "__main__":
+    main()

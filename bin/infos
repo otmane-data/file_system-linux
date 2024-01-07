@@ -1,0 +1,35 @@
+#!/bin/python3
+import subprocess
+import argparse
+import os
+
+def display_metadata(file_path):
+    try:
+        # Utilisez la commande exiftool pour afficher les métadonnées du fichier
+        result = subprocess.run(['exiftool', file_path], capture_output=True, text=True, check=True)
+
+        # Affiche la sortie de la commande exiftool
+        print(result.stdout)
+    except subprocess.CalledProcessError as e:
+        print(f"Erreur lors de l'exécution de la commande exiftool : {e}")
+    except FileNotFoundError:
+        print("exiftool n'est pas installé. Veuillez l'installer pour utiliser cette fonctionnalité.")
+
+def main():
+    parser = argparse.ArgumentParser(description="Afficher les métadonnées d'un fichier.")
+    parser.add_argument("file_name", help="Nom du fichier dont vous voulez afficher les métadonnées.")
+
+    args = parser.parse_args()
+    file_name = args.file_name
+
+    # Construction du chemin complet du fichier
+    file_path = os.path.join("/home/mouad/", file_name)
+
+    # Vérifier si le fichier existe avant d'afficher les métadonnées
+    if os.path.exists(file_path):
+        display_metadata(file_path)
+    else:
+        print(f"Le fichier {file_path} n'existe pas.")
+
+if __name__ == "__main__":
+    main()
