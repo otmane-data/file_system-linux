@@ -104,7 +104,7 @@ Ce projet simule un environnement Linux de manière simplifiée pour :
 
 ## 📄 Licence
 
-Projet sous licence **[à spécifier]**.
+Projet sous licence **MIT**.
 
 ---
 
